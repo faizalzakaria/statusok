@@ -18,10 +18,16 @@ type SlackNotify struct {
 }
 
 type postMessage struct {
+	Fallback string `json:"fallback"`
+	Color    string `json:"color"`
 	Channel  string `json:"channel"`
 	Username string `json:"username"`
 	Text     string `json:"text,omitempty"`
 	Icon_url string `json:"icon_url"`
+}
+
+type attachmentsMessage struct {
+	Attachments []postMessage `json:"attachments"`
 }
 
 func (slackNotify SlackNotify) GetClientName() string {
@@ -93,11 +99,17 @@ func (slackNotify SlackNotify) SendErrorNotification(errorNotification ErrorNoti
 
 func (slackNotify SlackNotify) getJsonParamBody(message string) (io.Reader, error) {
 
-	data, jsonErr := json.Marshal(postMessage{slackNotify.ChannelName,
+	var msg = postMessage{message,
+		"danger",
+		slackNotify.ChannelName,
 		slackNotify.Username,
 		message,
 		slackNotify.IconUrl,
-	})
+	}
+	var attachments = make([]postMessage, 1)
+	attachments = append(attachments, msg)
+
+	data, jsonErr := json.Marshal(attachmentsMessage{attachments})
 
 	if jsonErr != nil {
 
